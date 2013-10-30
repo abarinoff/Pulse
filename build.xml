@@ -1,0 +1,112 @@
+<project name="Pulse" basedir="." default="all" xmlns:if="ant:if">
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+    <property file="build.properties"/>
+
+    <condition property="is.windows">
+        <os family="windows"/>
+    </condition>
+
+    <condition property="is.unix">
+        <os family="unix"/>
+    </condition>
+
+    <target name="all" depends="info, clean, build, test"/>
+
+    <target name="info">
+        <echo message="Ant version: ${ant.version}"/>
+        <echo message="Build location: ${build.location}"/>
+    </target>
+
+    <target name="clean">
+        <antcall target="execute.command">
+            <param name="command.name" value="play"/>
+            <param name="command.line" value="clean"/>
+        </antcall>
+    </target>
+
+    <target name="build">
+        <antcall target="execute.command">
+            <param name="command.name" value="play"/>
+            <param name="command.line" value="compile"/>
+        </antcall>
+
+        <antcall target="report.build.results"/>
+    </target>
+
+    <target name="test">
+        <antcall target="execute.command">
+            <param name="command.name" value="play"/>
+            <param name="command.line" value="test"/>
+        </antcall>
+
+        <antcall target="report.test.results"/>
+    </target>
+
+    <target name="execute.command" depends="execute.command.on.windows, execute.command.on.unix"/>
+
+    <target name="execute.command.on.windows" if="is.windows">
+        <exec executable="cmd">
+            <arg line="/c"/>
+            <arg line="${command.name}"/>
+            <arg line="${command.line}"/>
+        </exec>
+    </target>
+
+    <target name="execute.command.on.unix" if="is.unix">
+        <exec executable="${command.name}">
+            <arg line="${command.line}"/>
+        </exec>
+    </target>
+
+    <target name="report.build.results">
+        <fail message="Compilation failed.">
+            <condition>
+                <resourcecontains resource="${compilation.report.dir}/${compilation.report.file.name}" substring="[error]"/>
+            </condition>
+        </fail>
+    </target>
+
+    <target name="report.test.results">
+        <fail message="Tests compilation failed.">
+            <condition>
+                <resourcecontains resource="${test.compilation.report.dir}/${test.compilation.report.file.name}" substring="[error]"/>
+            </condition>
+        </fail>
+
+        <junitreport todir="${test.report.dir}" tofile="${all.tests.report.file.name}">
+            <fileset dir="${test.report.dir}">
+                <include name="*.xml"/>
+            </fileset>
+        </junitreport>
+
+        <xmlproperty file="${test.report.dir}/${all.tests.report.file.name}"
+                     prefix="test.results" collapseAttributes="true" keeproot="false"/>
+
+        <antcall target="check.test.report.results">
+            <param name="check.list" value="${test.results.testsuite.errors}"/>
+        </antcall>
+
+        <antcall target="check.test.report.results">
+            <param name="check.list" value="${test.results.testsuite.failures}"/>
+        </antcall>
+    </target>
+
+    <target name="check.test.report.results">
+        <for list="${check.list}" param="checked.value">
+            <sequential>
+                <if>
+                    <not>
+                        <equals arg1="@{checked.value}" arg2="0"/>
+                    </not>
+
+                    <then>
+                        <fail message="Unit tests failed."/>
+                    </then>
+                </if>
+            </sequential>
+        </for>
+    </target>
+
+</project>
