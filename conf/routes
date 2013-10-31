@@ -8,3 +8,6 @@ POST    /importPdri                 controllers.Import.importPdri()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+# Temp action to parse existing .xls file and return JSON response
+GET     /parse                      controllers.Parser.parse()
