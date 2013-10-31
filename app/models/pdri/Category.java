@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Category {
+public class Category extends PDRIEntity {
     public static final String CATEGORY_TOKEN = "Category";
     public static final String ELEMENT_TOKEN = "Element";
     public static final String CATEGORY_TOTAL_TOKEN = "CATEGORY TOTAL";
@@ -29,17 +29,17 @@ public class Category {
     private int totalScore;
     private int totalMaxScore;
 
-    Category(String fullTitle) {
+    /*Category(String fullTitle) {
         // @todo Handle situations when the dot symbol has not been found
         this.title = fullTitle.substring(0, fullTitle.indexOf("."));
         this.description = fullTitle.substring(fullTitle.indexOf("."));
-    }
+    }*/
 
     public String getTitle() {
         return this.title;
     }
 
-    public static List<Category> extractCategories(HSSFSheet sheet, int offset) throws Exception {
+    /*public static List<Category> extractCategories(HSSFSheet sheet, int offset) throws Exception {
         List<Category> categories = new LinkedList<Category>();
         int elementOffset = offset + 1;
 
@@ -76,35 +76,7 @@ public class Category {
 
         return categories;
     }
-
-    private static boolean isValueInRow(Row row, String value) {
-        Iterator<Cell> cellIterator = row.iterator();
-        while(cellIterator.hasNext()) {
-            Cell cell = cellIterator.next();
-            if (cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().equals(value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static int findSingleCellIndex(Row row) {
-        int numberOfCells = row.getPhysicalNumberOfCells();
-        int index = -1;
-
-        for(int i = 0; i < numberOfCells - 1; i++) {
-            Cell cell = row.getCell(i);
-            // @todo Investigate the ways to determine the empty cell and/or strip whitespaces
-            if (!cell.toString().equals("")) {
-                if (index > 0) {
-                    return -1;
-                }
-                index = i;
-            }
-        }
-        return index;
-    }
-
+*/
     public String getCategoryTotalToken() {
         return StringUtils.join(CATEGORY_TOTAL_TOKEN.split(" "), " " + title + " ");
     }
