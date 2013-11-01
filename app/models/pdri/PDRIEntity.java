@@ -20,6 +20,21 @@ public abstract class PDRIEntity {
         return false;
     }
 
+    protected static int findCellMatchIndex(Row row, String pattern) {
+        int numberOfCells = row.getPhysicalNumberOfCells();
+        int index = -1;
+
+        for(int i = 0; i < numberOfCells - 1; i++) {
+            Cell cell = row.getCell(i);
+            if (cell.toString().matches(pattern)) {
+                index = i;
+                break;
+            }
+        }
+
+        return index;
+    }
+
     protected static int findSingleCellIndex(Row row) {
         int numberOfCells = row.getPhysicalNumberOfCells();
         int index = -1;

@@ -12,7 +12,7 @@ public class Section extends PDRIEntity {
     public static final int INITIAL_VERTICAL_OFFSET = 6;
 
     // Pattern to match the "Section" section of the worksheet
-    private static final String PATTERN = "^SECTION (I){1,3} - ";
+    private static final String PATTERN = "^SECTION (I){1,3} - .*";
 
     private String title;
     private String sectionEnd;
@@ -28,9 +28,9 @@ public class Section extends PDRIEntity {
 
     public String parse() {
         int categoriesStartRow = 0, categoriesEndRow = 0;
-        String dbg = "Error";
-
         int rowIndex = INITIAL_VERTICAL_OFFSET - 1;
+
+        String dbg = "Error";
         while(rowIndex < sheet.getPhysicalNumberOfRows() - 1) {
             Row row = sheet.getRow(rowIndex);
             if (!isSectionStart(row)) {
@@ -38,9 +38,9 @@ public class Section extends PDRIEntity {
                 continue;
             }
             parseStartRow(row);
-            dbg = title;//Integer.toString(rowIndex);
-            break;
-            /*categoriesStartRow = ++rowIndex;
+
+            // Looking for the section end marker
+            categoriesStartRow = ++rowIndex;
             while(rowIndex < sheet.getPhysicalNumberOfRows() - 1) {
                 row = sheet.getRow(rowIndex);
                 if (!isSectionEnd(row)) {
@@ -49,63 +49,42 @@ public class Section extends PDRIEntity {
                 }
                 // Section end
                 parseEndRow(row);
-                categoriesEndRow = ++rowIndex;
+                categoriesEndRow = rowIndex++ - 1;
             }
-            break;*/
+            break;
         }
-        return dbg;
 
         // Categories
-        /*rowIndex = categoriesStartRow;
+        rowIndex = categoriesStartRow;
         while(rowIndex <= categoriesEndRow) {
-            if (!Category.isCategoryStart()) {
+            Row row = sheet.getRow(rowIndex);
+            if (!Category.isCategoryStart(row)) {
                 rowIndex++;
                 continue;
             }
             Category category = new Category();
-            category.parseStartRow();
+            category.parseStartRow(row);
+
             // Here we have to save Elements start
             rowIndex++;
             while(rowIndex <= categoriesEndRow) {
-                if (!Category.isCategoryEnd()) {
+                row = sheet.getRow(rowIndex);
+                if (!Category.isCategoryEnd(row, category.getTitle())) {
                     rowIndex++;
                     continue;
                 }
+                category.parseEndRow(row);
                 categories.add(category);
                 rowIndex++;
                 break;
             }
-        }*/
+        }
 
-        /*boolean match = false;
-        for(int rowIndex = INITIAL_VERTICAL_OFFSET - 1; !match && rowIndex < sheet.getPhysicalNumberOfRows() - 1; rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-
-            Iterator<Cell> cellIterator = row.cellIterator();
-            while(!match && cellIterator!= null && cellIterator.hasNext()) {
-                Cell cell = cellIterator.next();
-
-                switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_STRING:
-                        String val = cell.getStringCellValue();
-                        if (val.matches(PATTERN)) {
-                            match = true;
-                            this.title = val;
-
-                            sectionOffset = rowIndex;
-                        }
-                    break;
-                }
-            }
-        }*/
-
-        // We know the offset of the Category row, extract categories
-        //categories = Category.extractCategories(sheet, sectionOffset + 1);
+        return dbg;
     }
 
     private void parseStartRow(Row row) {
         int cellIndex = indexCellMatched(row, PATTERN);
-        //title = "aaa!";//Integer.toString(cellIndex);
         String cellValue = row.getCell(cellIndex).toString();
 
         // @todo Regexp math would be better

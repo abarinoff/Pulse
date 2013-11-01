@@ -14,6 +14,9 @@ public class Category extends PDRIEntity {
     public static final String ELEMENT_TOKEN = "Element";
     public static final String CATEGORY_TOTAL_TOKEN = "CATEGORY TOTAL";
 
+    public static final String CATEGORY_START_PATTERN = "^[A-Za-z]{1}\\..*";
+    public static final String CATEGORY_END_PATTERN = "(\\s)*CATEGORY TOTAL(\\s)*";
+
     /**
      * Title of the category (part of the Category cell's content up to the first dot ".")
      */
@@ -28,12 +31,6 @@ public class Category extends PDRIEntity {
 
     private int totalScore;
     private int totalMaxScore;
-
-    /*Category(String fullTitle) {
-        // @todo Handle situations when the dot symbol has not been found
-        this.title = fullTitle.substring(0, fullTitle.indexOf("."));
-        this.description = fullTitle.substring(fullTitle.indexOf("."));
-    }*/
 
     public String getTitle() {
         return this.title;
@@ -77,8 +74,49 @@ public class Category extends PDRIEntity {
         return categories;
     }
 */
-    public String getCategoryTotalToken() {
-        return StringUtils.join(CATEGORY_TOTAL_TOKEN.split(" "), " " + title + " ");
+    public void parseStartRow(Row row) {
+        int cellIndex = findSingleCellIndex(row);
+        if (cellIndex < 0) {
+            // @todo Report error
+            throw new RuntimeException("Invalid Category start row");
+        }
+        String cellContent = row.getCell(cellIndex).toString();
+        title = cellContent.substring(0, cellContent.indexOf("."));
+        description = cellContent.substring(cellContent.indexOf(".") + 1);
+    }
+
+    public void parseEndRow(Row row) {
+        String pattern = getCategoryTotalToken(title);
+        int cellIndex = findCellMatchIndex(row, pattern);
+        if (cellIndex <= 0) {
+            // @todo Report an Error
+            throw new RuntimeException("Couldn't find the category end prefix while parsing the Category closing row");
+        }
+        totalScore = (int) row.getCell(++cellIndex).getNumericCellValue();
+        totalMaxScore = (int) row.getCell(++cellIndex).getNumericCellValue();
+    }
+
+    public static boolean isCategoryStart(Row row) {
+        boolean isStart = false;
+
+        int cellIndex = findSingleCellIndex(row);
+        if (cellIndex >= 0) {
+            String cellContent = row.getCell(cellIndex).toString();
+            isStart = cellContent.matches(CATEGORY_START_PATTERN);
+        }
+
+        return isStart;
+    }
+
+    public static boolean isCategoryEnd(Row row, String categoryTitle) {
+        String pattern = getCategoryTotalToken(categoryTitle);
+        int cellIndex = findCellMatchIndex(row, pattern);
+
+        return cellIndex > 0 ? true : false;
+    }
+
+    private static String getCategoryTotalToken(String title) {
+        return StringUtils.join(CATEGORY_END_PATTERN.split(" "), " " + title + " ");
     }
 
     public void parseCategoryTotals(Row row) {
