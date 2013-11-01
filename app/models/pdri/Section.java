@@ -1,5 +1,6 @@
 package models.pdri;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -13,6 +14,7 @@ public class Section extends PDRIEntity {
 
     // Pattern to match the "Section" section of the worksheet
     private static final String PATTERN = "^SECTION (I){1,3} - .*";
+    private static final String SECTION_TOTAL_PATTERN = "SECTION TOTAL";
 
     private String title;
     private String sectionEnd;
@@ -62,6 +64,7 @@ public class Section extends PDRIEntity {
                 rowIndex++;
                 continue;
             }
+            int elementsStartRow = rowIndex + 1; // @todo replace with ++rowIndex
             Category category = new Category();
             category.parseStartRow(row);
 
@@ -73,7 +76,9 @@ public class Section extends PDRIEntity {
                     rowIndex++;
                     continue;
                 }
+
                 category.parseEndRow(row);
+                category.parseElements();
                 categories.add(category);
                 rowIndex++;
                 break;
@@ -88,12 +93,19 @@ public class Section extends PDRIEntity {
         String cellValue = row.getCell(cellIndex).toString();
 
         // @todo Regexp math would be better
-        title = cellValue.substring(0, cellValue.indexOf("-"));
+        title = cellValue.substring(0, cellValue.indexOf("-")).trim();
     }
 
     private void parseEndRow(Row row) {
-        String pattern = "^(?i)" + title + "Maximum Score.*";
+        String pattern = "^(?i)" + title + "(\\s)+Maximum Score.*";
         sectionEnd = indexCellMatched(row, pattern) == -1 ? " Error" : row.getCell(indexCellMatched(row, pattern)).toString();
+        int sectionTotalColumnIndex = findCellMatchIndex(row, "(\\s)*(?i)" + title + "(\\s)+TOTAL(\\s)*");
+        if (sectionTotalColumnIndex < 0) {
+            // @todo report an error
+            throw new RuntimeException("No Section Totals cell found while parsing the Section end row");
+        }
+        totalScore = (int) row.getCell(++sectionTotalColumnIndex).getNumericCellValue();
+        totalMaxScore = (int) row.getCell(++sectionTotalColumnIndex).getNumericCellValue();
     }
 
     private boolean isSectionStart(Row row) {
@@ -101,7 +113,7 @@ public class Section extends PDRIEntity {
     }
 
     private boolean isSectionEnd(Row row) {
-        String pattern = "^(?i)" + title + "Maximum Score.*";
+        String pattern = "^(?i)" + title + "(\\s)+Maximum Score.*";
         return indexCellMatched(row, pattern) == -1 ? false : true;
     }
 
