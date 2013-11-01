@@ -1,5 +1,10 @@
 package controllers;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import models.pdri.Section;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -24,15 +29,29 @@ public class Parser extends Controller {
         // So far we parse only the very first sheet (for now we are guaranteed to have elements in the list)
         HSSFSheet sheet = sheets.get(0);
 
-        Section section = new Section(sheet);
-        String result = sheet.getSheetName() + " " + section.parse();
+        String result = "" + sheets.size() + "\r\n";
+        Section section = new Section(sheet, workbook);
+        section.parse();
+        result += section.toJson() + "\r\n";
+        /*for(HSSFSheet currentSheet : sheets) {
+            String sheetName = currentSheet.getSheetName();
+            //result += currentSheet.getSheetName() + "\r\n";
+            Section section = new Section(currentSheet, workbook);
+            section.parse();
+            result += section.toJson() + "\r\n";
+        }*/
+        //Section section = new Section(sheet, workbook);
+        //String result = sheet.getSheetName() + " " + section.parse();
+        /*section.parse();
+        String result = section.toJson();*/
+
 
         /*StringBuilder sb = new StringBuilder();
         for (HSSFSheet sheet : sheets) {
             sb.append(sheet.getSheetName() + "\r\n");
         }*/
 
-        return ok(result);
+        return ok(result).as("application/json");
     }
 
     private static HSSFWorkbook readWorkbook(String path) {

@@ -1,16 +1,14 @@
 package models.pdri;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class Category extends PDRIEntity {
-    public static final String CATEGORY_TOKEN = "Category";
-    public static final String ELEMENT_TOKEN = "Element";
-    public static final String CATEGORY_TOTAL_TOKEN = "CATEGORY TOTAL";
-
     public static final String CATEGORY_START_PATTERN = "^[A-Za-z]{1}\\..*";
     public static final String CATEGORY_END_PATTERN = "(\\s)*CATEGORY TOTAL(\\s)*";
 
@@ -18,6 +16,22 @@ public class Category extends PDRIEntity {
      * Title of the category (part of the Category cell's content up to the first dot ".")
      */
     private String title;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public List<Element> getElements() {
+        return elements;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public int getTotalMaxScore() {
+        return totalMaxScore;
+    }
 
     /**
      * Description of the category (part of the Category cell's content after the first dot)
@@ -55,8 +69,14 @@ public class Category extends PDRIEntity {
         totalMaxScore = (int) row.getCell(++cellIndex).getNumericCellValue();
     }
 
-    public void parseElements() {
-
+    public void parseElements(HSSFSheet sheet, int startRow, int endRow, HSSFWorkbook workbook1) {
+        for (int i = startRow; i <= endRow; i++) {
+            Row row = sheet.getRow(i);
+            Element element = Element.createElement(row, workbook1);
+            if (element != null) {
+                elements.add(element);
+            }
+        }
     }
 
     public static boolean isCategoryStart(Row row) {

@@ -1,7 +1,11 @@
 package models.pdri;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
@@ -24,15 +28,31 @@ public class Section extends PDRIEntity {
     private int totalScore;
     private int totalMaxScore;
 
-    public Section(HSSFSheet sheet) {
-        this.sheet = sheet;
+    public int getTotalMaxScore() {
+        return totalMaxScore;
     }
 
-    public String parse() {
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public Section(HSSFSheet sheet, HSSFWorkbook workbook) {
+        this.sheet = sheet;
+        this.workbook = workbook;
+    }
+
+    public void parse() {
         int categoriesStartRow = 0, categoriesEndRow = 0;
         int rowIndex = INITIAL_VERTICAL_OFFSET - 1;
 
-        String dbg = "Error";
         while(rowIndex < sheet.getPhysicalNumberOfRows() - 1) {
             Row row = sheet.getRow(rowIndex);
             if (!isSectionStart(row)) {
@@ -76,16 +96,14 @@ public class Section extends PDRIEntity {
                     rowIndex++;
                     continue;
                 }
-
+                int elementsEndRow = rowIndex - 1;
                 category.parseEndRow(row);
-                category.parseElements();
+                category.parseElements(sheet, elementsStartRow, elementsEndRow, workbook);
                 categories.add(category);
                 rowIndex++;
                 break;
             }
         }
-
-        return dbg;
     }
 
     private void parseStartRow(Row row) {
@@ -133,4 +151,27 @@ public class Section extends PDRIEntity {
         }
         return match;
     }
+
+    public String toJson() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        String jsonString = "";
+        try {
+            jsonString = mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return jsonString;
+    }
+
+    /*@Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("SECTION");
+        sb.append("title: " + title);
+        sb.append("totalScore: " + totalScore);
+        sb.append("totalMaxScore: " + totalMaxScore);
+
+        return sb.toString();
+    }*/
 }
