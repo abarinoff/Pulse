@@ -132,7 +132,7 @@ public class Section extends PDRIEntity {
 
     private boolean isSectionEnd(Row row) {
         String pattern = "^(?i)" + title + "(\\s)+Maximum Score.*";
-        return indexCellMatched(row, pattern) == -1 ? false : true;
+        return row == null || indexCellMatched(row, pattern) == -1 ? false : true;
     }
 
     private int indexCellMatched(Row row, String pattern) {

@@ -26,16 +26,21 @@ public class Parser extends Controller {
         HSSFWorkbook workbook = readWorkbook(TEST_FILE_PATH);
         List<HSSFSheet> sheets = getMatchingSheets(workbook, SHEET_NAME_PATTERN);
 
-        // So far we parse only the very first sheet (for now we are guaranteed to have elements in the list)
-        HSSFSheet sheet = sheets.get(0);
+        String result = "";
+        /*for (HSSFSheet sheet : sheets) {
+            result += sheet.getSheetName() + "\r\n";
+        }*/
 
-        String result = "" + sheets.size() + "\r\n";
+        // So far we parse only the very first sheet (for now we are guaranteed to have elements in the list)
+        HSSFSheet sheet = sheets.get(4);
+
+        //result += sheets.size() + "\r\n";
         Section section = new Section(sheet, workbook);
         section.parse();
         result += section.toJson() + "\r\n";
         /*for(HSSFSheet currentSheet : sheets) {
             String sheetName = currentSheet.getSheetName();
-            //result += currentSheet.getSheetName() + "\r\n";
+            result += currentSheet.getSheetName() + "\r\n";
             Section section = new Section(currentSheet, workbook);
             section.parse();
             result += section.toJson() + "\r\n";
