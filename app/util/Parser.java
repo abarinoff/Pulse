@@ -19,8 +19,8 @@ public class Parser {
     // The current sheet being parsed
     protected HSSFSheet sheet;
 
-    // Header of the Sheet (for convenient Element parsing)
-    Header header;
+    // SectionHeader of the Sheet (for convenient Element parsing)
+    SectionHeader header;
 
     FormulaEvaluator formulaEvaluator;
 
@@ -287,7 +287,7 @@ public class Parser {
 
     }
 
-    private class Header {
+    private class SectionHeader {
         private int categoryOffset;
         private int elementsOffset;
         private int defLevelOffset;
@@ -326,12 +326,11 @@ public class Parser {
         }
     }
 
-
     private void buildHeader() {
         for(int i = 0; i < sheet.getPhysicalNumberOfRows() - 1; i++) {
             Row row = sheet.getRow(i);
             if (row != null && hasAllValues(row, categoryFields)) {
-                header = new Header();
+                header = new SectionHeader();
                 header.categoryOffset = getMatchedCellIndex(row, categoryFields[0]);
                 header.defLevelOffset = getMatchedCellIndex(row, categoryFields[1]);
                 header.levelOffset = getMatchedCellIndex(row, categoryFields[2]);
@@ -339,7 +338,7 @@ public class Parser {
                 header.maxScoreOffset = getMatchedCellIndex(row, categoryFields[4]);
                 header.commentsOffset = getMatchedCellIndex(row, categoryFields[5]);
 
-                // check for 'Elements' part of a Header
+                // check for 'Elements' part of a SectionHeader
                 row = sheet.getRow(i + 1);
                 if (row != null && hasAllValues(row, elementFields)) {
                     Map<String, Integer> defLevels = new HashMap<String, Integer>();
@@ -351,7 +350,7 @@ public class Parser {
                     break;
                 }
 
-                // 'Elements' part of a Header was not found, Header should not be created
+                // 'Elements' part of a SectionHeader was not found, SectionHeader should not be created
                 header = null;
             }
         }
