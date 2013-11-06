@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.Row;
 import java.util.*;
 
 public class Parser {
+    public static final String SHEET_NAME_PATTERN = "^(?i)Section\\s+((?-i)[IVX]|\\d)+\\s*-\\s*((?!Unweighted).)*";
 
     protected HSSFWorkbook workbook;
 
@@ -43,20 +44,27 @@ public class Parser {
         formulaEvaluator = this.workbook.getCreationHelper().createFormulaEvaluator();
     }
 
-    public Section parse() {
-        int index = workbook.getSheetIndex("Section I - Basis of Project 1");
-        sheet = workbook.getSheetAt(index);
+    public List<Section> parse() {
+        List<Section> sections = new LinkedList<Section>();
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            sheet = workbook.getSheetAt(i);
+            String name = sheet.getSheetName();
+            if (name.matches(SHEET_NAME_PATTERN)) {
 
-        // Parse header, make it a class member
-        buildHeader();
+                // Parse header, make it a class member
+                buildHeader();
 
-        // Parse section
-        int startRow = 0,
-            endRow = sheet.getPhysicalNumberOfRows() - 1;
-        SectionParser sectionParser = new SectionParser();
-        Section section = sectionParser.parse(startRow, endRow);
+                // Parse section
+                int startRow = 0,
+                    endRow = sheet.getPhysicalNumberOfRows() - 1;
 
-        return section;
+                SectionParser sectionParser = new SectionParser();
+                Section section = sectionParser.parse(startRow, endRow);
+
+                sections.add(section);
+            }
+        }
+        return sections;
     }
 
     private class SectionParser {
@@ -119,7 +127,8 @@ public class Parser {
             boolean result = false;
             if (row != null) {
                 // Section's 'Max Score'
-                String pattern = "(?i)^" + section.getTitle() + "\\s+Maximum Score\\s*=\\s*\\d+";
+                //String pattern = "(?i)^" + section.getTitle() + "\\s+Maximum Score\\s*=\\s*\\d+";
+                String pattern = "(?i)^\\s*Section\\s+(?-i)([IVX]|\\d)+\\s+Maximum Score\\s*=\\s*\\d+";
                 int cellIndex = getMatchedCellIndex(row, pattern);
                 if (cellIndex >=0 ) {
                     String sectionEnd = getCellAsString(row, cellIndex);

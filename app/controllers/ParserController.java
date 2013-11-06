@@ -9,6 +9,7 @@ import util.Parser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class ParserController extends Controller {
     public static final String TEST_FILE_PATH = "data/PDRI Industrial Example - Sandra.xls";
@@ -16,9 +17,14 @@ public class ParserController extends Controller {
     public static Result parse() {
         HSSFWorkbook workbook = readWorkbook(TEST_FILE_PATH);
         Parser parser = new Parser(workbook);
-        Section section = parser.parse();
+        List<Section> sections = parser.parse();
 
-        return ok(section.toJson()).as("application/json");
+        StringBuilder sb = new StringBuilder();
+        for (Section section : sections) {
+            sb.append(section.toJson());
+        }
+
+        return ok(sb.toString()).as("application/json");
     }
 
     private static HSSFWorkbook readWorkbook(String path) {
@@ -33,18 +39,4 @@ public class ParserController extends Controller {
 
         return workbook;
     }
-
-    /*private static List<HSSFSheet> getMatchingSheets(HSSFWorkbook workbook, String namePattern) {
-        List<HSSFSheet> sheets = new LinkedList<HSSFSheet>();
-
-        int count = workbook.getNumberOfSheets();
-        for(int i = 0; i < count; i++) {
-            HSSFSheet sheet = workbook.getSheetAt(i);
-            if (sheet.getSheetName().matches(namePattern)) {
-                sheets.add(sheet);
-            }
-        }
-
-        return sheets;
-    }*/
 }
