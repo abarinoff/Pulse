@@ -14,42 +14,41 @@
         <link href="@routes.Assets.at("css/main.min.css")" rel="stylesheet">
         <link href="@routes.Assets.at("css/bootstrap.min.css")" rel="stylesheet">
         <link href="@routes.Assets.at("css/jquery.fileupload.css")" rel="stylesheet">
+        <link href="@routes.Assets.at("css/import.min.css")" rel="stylesheet">
 
         <!--[if lt IE 9]>
             <script src="@routes.Assets.at("js/lib/html5shiv.js")"></script>
             <script src="@routes.Assets.at("js/lib/respond.min.js")"></script>
         <![endif]-->
-
     </head>
-    <body>
-        <div id="navbar" class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="@routes.Application.index()">Pulse</a>
-                </div>
 
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li id="nav-home" class="active">
-                            <a href="@routes.Application.index()">Home</a>
-                        </li>
-                    </ul>
+    <body>
+        <div class="container">
+
+            <!-- Page header -->
+            <div id="header" class="row">
+                <div class="col-md-7 col-md-offset-1"></div>
+                <div class="col-md-3">
+                    <div class="current-location">
+                        <p class="text-right">
+                            Import Assessment
+                        </p>
+                    </div>
+                    <div class="user-menu">
+                        <p class="text-right">
+                            <a href="">Sign Out</a>&nbsp;&nbsp;|&nbsp;
+                            <a href="">My Reports</a>
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="container">
-            <div id="content">
+            <div id="content" class="row">
                 @content
             </div>
 
-            <hr>
-
             <footer>
-                <p>&copy; 2013 Valency Inc.</p>
+
             </footer>
         </div>
 
